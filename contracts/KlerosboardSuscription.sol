@@ -65,8 +65,8 @@ contract KlerosboardSuscription is Ownable {
     constructor(address _ubiburner, uint8 _maintenanceFee, uint96 _donationPerMonth) {
         maintainer = msg.sender;
         changeMaintenanceFee(_maintenanceFee);
-        ubiburner = _ubiburner;
-        donationPerMonth = _donationPerMonth;
+        changeUBIburner(_ubiburner);
+        changeDonationPerMonth(_donationPerMonth);
     }
 
     /**
