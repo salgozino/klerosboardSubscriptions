@@ -48,9 +48,6 @@ contract KlerosboardSuscription is Ownable {
 
     /// @dev Indicates if the address have donated at least once some amount. isDonor[address].
     mapping(address => bool) public isDonor;
-
-    /// @dev Indicates the last amount donated by address. getLastDonation[address].
-    mapping(address => uint256) public getLastDonation;
     
     /// @dev Indicates the total amount donated by address. getTotalDonor[address].
     mapping(address => uint256) public getTotalDonor;
@@ -77,7 +74,6 @@ contract KlerosboardSuscription is Ownable {
         
         
         isDonor[msg.sender] = true;
-        getLastDonation[msg.sender] = msg.value;
         getTotalDonor[msg.sender] += msg.value;
         emit UBIBurnDonation(msg.sender, ETHToBurnUBI);
         emit Donation(msg.sender, msg.value);

@@ -76,7 +76,6 @@ describe("KlerosBoardSuscription", function () {
     expect(await this.kbsub.isDonor(this.account2.address)).to.be.true;
     expect(await this.kbsub.isDonor(this.account1.address)).to.be.false;
     expect(await this.kbsub.getTotalDonor(this.account2.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
-    expect(await this.kbsub.getLastDonation(this.account2.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
 
   });
 
@@ -90,7 +89,6 @@ describe("KlerosBoardSuscription", function () {
     expect(await this.kbsub.isDonor(this.account1.address)).to.be.true;
     expect(await this.kbsub.isDonor(this.account2.address)).to.be.false;
     expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
-    expect(await this.kbsub.getLastDonation(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
 
   });
 
@@ -102,7 +100,6 @@ describe("KlerosBoardSuscription", function () {
 
     expect(await this.kbsub.isDonor(this.account1.address)).to.be.true;
     expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
-    expect(await this.kbsub.getLastDonation(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
 
   });
 
@@ -114,7 +111,6 @@ describe("KlerosBoardSuscription", function () {
 
     expect(await this.kbsub.isDonor(this.account1.address)).to.be.true;
     expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
-    expect(await this.kbsub.getLastDonation(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
   });
 
   it("Withdraw only by maintainer", async function(){
@@ -151,10 +147,8 @@ describe("KlerosBoardSuscription", function () {
 
 
     expect(await this.kbsub.getTotalDonor(this.account2.address)).to.be.equal(ethers.utils.parseUnits('2', 'ether'));
-    expect(await this.kbsub.getLastDonation(this.account2.address)).to.be.equal(ethers.utils.parseUnits('2', 'ether'));
 
     expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1.5', 'ether'));
-    expect(await this.kbsub.getLastDonation(this.account1.address)).to.be.equal(ethers.utils.parseUnits('0.5', 'ether'));
 
 
   })
