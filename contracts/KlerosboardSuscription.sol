@@ -31,6 +31,13 @@ contract KlerosboardSuscription is Ownable {
     */
     event Donation(address indexed from, uint256 amount);
 
+    /**
+    *  @dev Emitted when a donation it's made
+    *  @param from who made the donation.
+    *  @param amount amount of ETH sent to UBI Burner
+    */
+    event UBIBurnDonation(address indexed from, uint256 amount);
+
     /* Constants */
     /// @dev Contract Maintainer
     address public maintainer;
@@ -68,9 +75,11 @@ contract KlerosboardSuscription is Ownable {
         (bool successTx, ) = UBIburner.call{value: ETHToBurnUBI}("");
         require(successTx, "ETH to UBIBurner fail");
         
+        
         isDonor[msg.sender] = true;
         getLastDonation[msg.sender] = msg.value;
         getTotalDonor[msg.sender] += msg.value;
+        emit UBIBurnDonation(msg.sender, ETHToBurnUBI);
         emit Donation(msg.sender, msg.value);
     }
 
@@ -96,8 +105,8 @@ contract KlerosboardSuscription is Ownable {
         emit UBUBurnerChanged(UBIburner);
     }
 
-    function withdrawlMaintenance() external {
-        require(msg.sender == maintainer, 'Only maintainer can withdrawl');
+    function withdrawMaintenance() external {
+        require(msg.sender == maintainer, 'Only maintainer can withdraw');
         payable(msg.sender).transfer(address(this).balance);
     }
 }
