@@ -11,7 +11,7 @@ async function main() {
   eoa = await ethers.getSigners();
 
   const KBSfactory = await hre.ethers.getContractFactory("KlerosboardSuscription");
-  const kbsub = KBSfactory.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+  const kbsub = KBSfactory.attach("0x7c98e89C63f5e15bE847E764F7cCEe4935C31636");
   const ubiburner = await kbsub.ubiburner();
   console.log("UBIBurner: ", ubiburner);
   await kbsub.donate({value: hre.ethers.utils.parseUnits('0.1','ether')})
