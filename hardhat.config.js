@@ -1,6 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 
-const { infura_key, mnemonic } = require('./secrets.json');
+const { infura_key, mnemonic, etherscanApiKey } = require('./secrets.json');
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -25,5 +26,8 @@ module.exports = {
       url: "https://kovan.infura.io/v3/"+infura_key,
       accounts: { mnemonic },
     }
-  }
+  },
+  etherscan: {
+    apiKey: etherscanApiKey
+    }
 };
