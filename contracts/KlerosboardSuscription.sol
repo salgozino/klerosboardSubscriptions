@@ -25,6 +25,13 @@ contract KlerosboardSuscription is Ownable {
     event UBUBurnerChanged(address UBIburner);
 
     /**
+    *  @dev Emitted when the amount per month required of donation is changed.
+    *  @param oldDonationAmount previous donation Amount
+    *  @param donationAmount new donation Amount
+    */
+    event donationPerMonthChanged(uint256 oldDonationAmount, uint256 donationAmount);
+
+    /**
     *  @dev Emitted when a donation it's made
     *  @param from who made the donation.
     *  @param amount amount of ETH donated.
@@ -35,7 +42,7 @@ contract KlerosboardSuscription is Ownable {
     *  @dev Emitted when a donation it's made
     *  @param from who made the donation.
     *  @param amount amount of ETH sent to UBI Burner
-    */
+    */    
     event UBIBurnDonation(address indexed from, uint256 amount);
 
     /* Constants */
@@ -43,8 +50,10 @@ contract KlerosboardSuscription is Ownable {
     address public maintainer;
     /// @dev divisor to calculate the Maintenance Fee
     uint8 public maintenanceFeeDivisor;
-        /// @dev UBIburner Contract
+    /// @dev UBIburner Contract
     address private UBIburner;
+    /// @dev Amount per month to Enable klerosboard Features
+    uint256 public donationPerMonth;
 
     /// @dev Indicates if the address have donated at least once some amount. isDonor[address].
     mapping(address => bool) public isDonor;
@@ -53,10 +62,11 @@ contract KlerosboardSuscription is Ownable {
     mapping(address => uint256) public getTotalDonor;
 
 
-    constructor(address _UBIburner, uint8 _maintenanceFee) {
+    constructor(address _UBIburner, uint8 _maintenanceFee, uint96 _donationPerMonth) {
         maintainer = msg.sender;
         changeMaintenanceFee(_maintenanceFee);
         UBIburner = _UBIburner;
+        donationPerMonth = _donationPerMonth;
     }
 
     /**
@@ -99,6 +109,13 @@ contract KlerosboardSuscription is Ownable {
         require(_UBIBurner != address(0), 'null address');
         UBIburner = _UBIBurner;
         emit UBUBurnerChanged(UBIburner);
+    }
+
+    function changeDonationPerMonth (uint256 _donationPerMonth) public onlyOwner {
+        require(_donationPerMonth > 0, 'donationPerMonth should not be zero');
+        uint256 oldDonation = donationPerMonth;
+        donationPerMonth = _donationPerMonth;
+        emit donationPerMonthChanged(oldDonation, donationPerMonth);
     }
 
     function withdrawMaintenance() external {

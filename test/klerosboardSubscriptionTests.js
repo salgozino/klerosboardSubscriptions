@@ -14,12 +14,12 @@ describe("KlerosBoardSuscription", function () {
     
     const KBSfactory = await ethers.getContractFactory("KlerosboardSuscription");
     this.maintainanceFee = 5;
-    this.kbsub = await KBSfactory.deploy(this.ubiburner.address, this.maintainanceFee);
+    this.donationPerMonth = 10000000000;
+    this.kbsub = await KBSfactory.deploy(this.ubiburner.address, this.maintainanceFee, this.donationPerMonth);
     await this.kbsub.deployed();
 
     this.provider = ethers.provider;
 
-    // console.log("Contracts deployed");
   });
 
   it("owner and maintainer check", async function () {
@@ -64,6 +64,29 @@ describe("KlerosBoardSuscription", function () {
     .withArgs(this.deployer.address, this.account1.address);
 
     expect(await this.kbsub.owner()).to.be.equal(this.account1.address);
+  });
+
+  it("only Owner can change donationPerMonth", async function() {
+
+    await expect(this.kbsub.connect(this.account1).changeDonationPerMonth(200000000))
+    .to.be.reverted;
+  });
+
+  it("not allow donationPerMonth equals zero", async function() {
+    await expect(this.kbsub.changeDonationPerMonth(0))
+    .to.be.revertedWith("donationPerMonth should not be zero");
+
+  });
+
+  it("change donationPerMonth and emit event", async function() {
+    expect(await this.kbsub.donationPerMonth()).to.be.equal(this.donationPerMonth);
+    
+    await expect(this.kbsub.changeDonationPerMonth(200000000))
+    .to.emit(this.kbsub, 'donationPerMonthChanged')
+    .withArgs(this.donationPerMonth, 200000000);
+    
+    expect(await this.kbsub.donationPerMonth()).to.be.equal(200000000);
+
   });
 
   it("1ETH Donation - Balances - account2", async function(){
