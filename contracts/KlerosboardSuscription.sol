@@ -19,10 +19,10 @@ contract KlerosboardSuscription is Ownable {
     event MaintenanceFeeChanged(uint8 maintenanceFeeDivisor);
 
     /**
-    *  @dev Emitted when the contract of UBIBurner is changed.
-    *  @param UBIburner address of the new contract.
+    *  @dev Emitted when the contract of ubiburner is changed.
+    *  @param ubiburner address of the new contract.
     */
-    event UBUBurnerChanged(address UBIburner);
+    event UBUBurnerChanged(address ubiburner);
 
     /**
     *  @dev Emitted when the amount per month required of donation is changed.
@@ -50,8 +50,8 @@ contract KlerosboardSuscription is Ownable {
     address public maintainer;
     /// @dev divisor to calculate the Maintenance Fee
     uint8 public maintenanceFeeDivisor;
-    /// @dev UBIburner Contract
-    address private UBIburner;
+    /// @dev ubiburner Contract
+    address public ubiburner;
     /// @dev Amount per month to Enable klerosboard Features
     uint256 public donationPerMonth;
 
@@ -62,10 +62,10 @@ contract KlerosboardSuscription is Ownable {
     mapping(address => uint256) public getTotalDonor;
 
 
-    constructor(address _UBIburner, uint8 _maintenanceFee, uint96 _donationPerMonth) {
+    constructor(address _ubiburner, uint8 _maintenanceFee, uint96 _donationPerMonth) {
         maintainer = msg.sender;
         changeMaintenanceFee(_maintenanceFee);
-        UBIburner = _UBIburner;
+        ubiburner = _ubiburner;
         donationPerMonth = _donationPerMonth;
     }
 
@@ -78,9 +78,9 @@ contract KlerosboardSuscription is Ownable {
         uint256 maintainanceFee = msg.value / maintenanceFeeDivisor;
         uint256 ETHToBurnUBI = msg.value - maintainanceFee;
         require(ETHToBurnUBI > maintainanceFee, 'Overflow');
-        // Send ETH - maintainanceFee to UBIBurner
-        (bool successTx, ) = UBIburner.call{value: ETHToBurnUBI}("");
-        require(successTx, "ETH to UBIBurner fail");
+        // Send ETH - maintainanceFee to ubiburner
+        (bool successTx, ) = ubiburner.call{value: ETHToBurnUBI}("");
+        require(successTx, "ETH to ubiburner fail");
         
         
         isDonor[msg.sender] = true;
@@ -105,10 +105,10 @@ contract KlerosboardSuscription is Ownable {
         emit MaintenanceFeeChanged(maintenanceFeeDivisor);
     }
 
-    function changeUBIBurner (address _UBIBurner) public onlyOwner {
-        require(_UBIBurner != address(0), 'null address');
-        UBIburner = _UBIBurner;
-        emit UBUBurnerChanged(UBIburner);
+    function changeUBIburner (address _ubiburner) public onlyOwner {
+        require(_ubiburner != address(0), 'UBIBurner could not be null');
+        ubiburner = _ubiburner;
+        emit UBUBurnerChanged(ubiburner);
     }
 
     function changeDonationPerMonth (uint256 _donationPerMonth) public onlyOwner {

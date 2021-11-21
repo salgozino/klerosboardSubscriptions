@@ -44,6 +44,10 @@ describe("KlerosBoardSuscription", function () {
     await expect(this.kbsub.connect(this.account2).changeMaintainer(this.account1.address)).to.be.reverted;
   });
 
+  it("Maintainer revert if zero Address", async function() {
+    await expect(this.kbsub.changeMaintainer(ethers.constants.AddressZero)).to.be.reverted;
+  });
+
   it("Maintainer change and emit event", async function() {
 
     await expect(this.kbsub.changeMaintainer(this.account1.address))
@@ -55,6 +59,10 @@ describe("KlerosBoardSuscription", function () {
 
   it("transferOwnership revert if not Owner", async function() {
     await expect(this.kbsub.connect(this.account2).transferOwnership(this.account1.address)).to.be.reverted;
+  });
+
+  it("transferOwnership revert if zero Address", async function() {
+    await expect(this.kbsub.transferOwnership(ethers.constants.AddressZero)).to.be.reverted;
   });
 
   it("transferOwnership change and emit event", async function() {
@@ -88,6 +96,22 @@ describe("KlerosBoardSuscription", function () {
     expect(await this.kbsub.donationPerMonth()).to.be.equal(200000000);
 
   });
+
+  it("check ubiburner", async function() {
+    expect(await this.kbsub.ubiburner()).to.be.equal(this.ubiburner.address);
+
+  });
+
+  it("onlyOwner can change ubiburner", async function() {
+    await expect(this.kbsub.connect(this.account1).changeUBIburner(this.deployer.address)).to.be.reverted;
+
+  });
+
+  it("ubiburner cant be null address", async function() {
+    await expect(this.kbsub.changeUBIburner(ethers.constants.AddressZero))
+    .to.be.revertedWith("UBIBurner could not be null");
+  });
+
 
   it("1ETH Donation - Balances - account2", async function(){
     await this.kbsub.connect(this.account2).donate({value:  ethers.utils.parseUnits('1', 'ether')});
