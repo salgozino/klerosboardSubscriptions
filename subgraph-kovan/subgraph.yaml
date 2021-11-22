@@ -1,0 +1,42 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: KlerosboardSuscription
+    network: kovan
+    source:
+      address: "0x7c98e89C63f5e15bE847E764F7cCEe4935C31636"
+      abi: KlerosboardSuscription
+      startBlock: 28483147
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Donation
+        - MaintainerChanged
+        - MaintenanceFeeChanged
+        - OwnershipTransferred
+        - UBIBurnDonation
+        - UBUBurnerChanged
+        - donationPerMonthChanged
+      abis:
+        - name: KlerosboardSuscription
+          file: ./abis/KlerosboardSuscription.json
+      eventHandlers:
+        - event: Donation(indexed address,uint256)
+          handler: handleDonation
+        - event: MaintainerChanged(indexed address,indexed address)
+          handler: handleMaintainerChanged
+        - event: MaintenanceFeeChanged(uint8)
+          handler: handleMaintenanceFeeChanged
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: UBIBurnDonation(indexed address,uint256)
+          handler: handleUBIBurnDonation
+        - event: UBUBurnerChanged(address)
+          handler: handleUBUBurnerChanged
+        - event: donationPerMonthChanged(uint256,uint256)
+          handler: handledonationPerMonthChanged
+      file: ./src/mapping.ts

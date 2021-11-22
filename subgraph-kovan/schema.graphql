@@ -1,0 +1,28 @@
+type Donor @entity {
+  id: ID!
+  totalDonated: BigInt!
+  lastDonated: BigInt!
+  lastDonatedTimestamp: BigInt
+  donations: [Donation!] @derivedFrom(field: "donor")
+}
+
+type Donation @entity {
+  id: ID!,
+  donor: Donor!,
+  amount: BigInt!,
+  timestamp: BigInt!,
+  ethToUBIBurner: BigInt!
+  ethToMaintainance: BigInt!
+}
+
+type KBSubscription @entity {
+  id: ID!,
+  UBIBurner: Bytes!,
+  maintainer: Bytes!,
+  owner: Bytes!,
+  donationPerMonth: BigInt!,
+  maintenanceFeeDivisor: BigInt!,
+  donations: [Donation!]!,
+  totalDonated: BigInt!,
+  totalETHToUBIBurner: BigInt!
+}
