@@ -1,6 +1,7 @@
 type Donor @entity {
   id: ID!
   totalDonated: BigInt!
+  totalETHToUBIBurner: BigInt!
   lastDonated: BigInt!
   lastDonatedTimestamp: BigInt
   donations: [Donation!] @derivedFrom(field: "donor")

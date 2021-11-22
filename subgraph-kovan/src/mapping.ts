@@ -11,14 +11,9 @@ import {
 import { KBSubscription, Donor, Donation } from "../generated/schema"
 
 export function handleDonation(event: DonationEvent): void {
-  log.debug("handleDonation: Updating Donor {} information.", [event.params.from.toString()])
-  let donor = getOrCreateDonor(event.params.from);
-  donor.lastDonated = event.params.amount;
-  donor.totalDonated = donor.totalDonated.plus(event.params.amount);
-  donor.lastDonatedTimestamp = event.block.timestamp;
-  donor.save();
-
   let donation_id = event.transaction.hash.toHexString() + '-' + event.transaction.index.toHexString();
+  let donor = getOrCreateDonor(event.params.from);
+  
   log.debug("handleDonation: Creating Donation entity with id {}.", [donation_id])
   let donation = new Donation(donation_id);
   donation.amount = event.params.amount;
@@ -37,6 +32,14 @@ export function handleDonation(event: DonationEvent): void {
   kbs.totalDonated = kbs.totalDonated.plus(event.params.amount);
   kbs.totalETHToUBIBurner = kbs.totalETHToUBIBurner.plus(donation.ethToUBIBurner);
   kbs.save()
+
+  log.debug("handleDonation: Updating Donor {} information.", [event.params.from.toString()])
+
+  donor.lastDonated = event.params.amount;
+  donor.totalDonated = donor.totalDonated.plus(event.params.amount);
+  donor.totalETHToUBIBurner = donor.totalETHToUBIBurner.plus(donation.ethToUBIBurner);
+  donor.lastDonatedTimestamp = event.block.timestamp;
+  donor.save();
 
 }
 
@@ -107,6 +110,7 @@ function getOrCreateDonor(address: Address): Donor {
     donor = new Donor(address.toHexString());
     donor.lastDonated = BigInt.fromI32(0);
     donor.totalDonated = BigInt.fromI32(0);
+    donor.totalETHToUBIBurner = BigInt.fromI32(0);
     donor.save();
   }
   return donor!;
