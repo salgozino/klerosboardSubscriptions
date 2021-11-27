@@ -17,7 +17,10 @@ async function main() {
   console.log("UBIBurner deployed to:", ubiburner.address);
 
   const KBSfactory = await hre.ethers.getContractFactory("KlerosboardSuscription");
-  const kbsub = await KBSfactory.deploy(ubiburner.address, 5);
+  donationPerMonth = hre.ethers.utils.parseUnits('0.1', 'ether');
+  maintenanceFee = 5;
+  const kbsub = await KBSfactory.deploy(ubiburner.address, maintenanceFee, donationPerMonth);
+  console.log(kbsub.deployTransaction.gasLimit.toString());
 
   await kbsub.deployed();
 
