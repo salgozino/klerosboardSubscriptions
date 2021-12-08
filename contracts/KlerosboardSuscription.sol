@@ -14,15 +14,16 @@ contract KlerosboardSuscription is Ownable {
 
     /**
     *  @dev Emitted when the maintenance fee is changed.
-    *  @param maintenanceFeeDivisor new value of maintainance fee
+    *  @param maintenanceFeeMultiplier new value of maintainance fee
     */
-    event MaintenanceFeeChanged(uint8 maintenanceFeeDivisor);
+    event MaintenanceFeeChanged(uint maintenanceFeeMultiplier);
 
     /**
     *  @dev Emitted when the contract of ubiburner is changed.
+    *  @param oldUbiburner address of the old contract.
     *  @param ubiburner address of the new contract.
     */
-    event UBUBurnerChanged(address ubiburner);
+    event UBIBurnerChanged(address oldUbiburner, address ubiburner);
 
     /**
     *  @dev Emitted when the amount per month required of donation is changed.
@@ -35,34 +36,21 @@ contract KlerosboardSuscription is Ownable {
     *  @dev Emitted when a donation it's made
     *  @param from who made the donation.
     *  @param amount amount of ETH donated.
+    *  @param ethToUbiBurner amount of ETH sent to UBI Burner
     */
-    event Donation(address indexed from, uint256 amount);
-
-    /**
-    *  @dev Emitted when a donation it's made
-    *  @param from who made the donation.
-    *  @param amount amount of ETH sent to UBI Burner
-    */    
-    event UBIBurnDonation(address indexed from, uint256 amount);
+    event Donation(address indexed from, uint256 amount, uint256 ethToUbiBurner);
 
     /* Constants */
     /// @dev Contract Maintainer
     address public maintainer;
-    /// @dev divisor to calculate the Maintenance Fee
-    uint8 public maintenanceFeeDivisor;
+    /// @dev Maintenance Fee expresed in tens of thousands
+    uint public maintenanceFeeMultiplier;
     /// @dev ubiburner Contract
     address public ubiburner;
     /// @dev Amount per month to Enable klerosboard Features
     uint256 public donationPerMonth;
-
-    /// @dev Indicates if the address have donated at least once some amount. isDonor[address].
-    mapping(address => bool) public isDonor;
     
-    /// @dev Indicates the total amount donated by address. getTotalDonor[address].
-    mapping(address => uint256) public getTotalDonor;
-
-
-    constructor(address _ubiburner, uint8 _maintenanceFee, uint96 _donationPerMonth) {
+    constructor(address _ubiburner, uint _maintenanceFee, uint96 _donationPerMonth) {
         maintainer = msg.sender;
         changeMaintenanceFee(_maintenanceFee);
         changeUBIburner(_ubiburner);
@@ -73,20 +61,14 @@ contract KlerosboardSuscription is Ownable {
     *  @dev Donate ETH
     */
     function donate() payable external {
-        require(msg.value > 0, 'ETH to be donated > 0');
-        // TODO: THIS NEED TO BE TESTED!. Overflows?
-        uint256 maintainanceFee = msg.value / maintenanceFeeDivisor;
-        uint256 ETHToBurnUBI = msg.value - maintainanceFee;
-        require(ETHToBurnUBI > maintainanceFee, 'Overflow');
+        uint256 maintenanceFee = msg.value * maintenanceFeeMultiplier / 10000;
+        uint256 ETHToBurnUBI = msg.value - maintenanceFee;
+
         // Send ETH - maintainanceFee to ubiburner
         (bool successTx, ) = ubiburner.call{value: ETHToBurnUBI}("");
         require(successTx, "ETH to ubiburner fail");
-        
-        
-        isDonor[msg.sender] = true;
-        getTotalDonor[msg.sender] += msg.value;
-        emit UBIBurnDonation(msg.sender, ETHToBurnUBI);
-        emit Donation(msg.sender, msg.value);
+
+        emit Donation(msg.sender, msg.value, ETHToBurnUBI);
     }
 
     function changeMaintainer (address _maintainer) public onlyOwner {
@@ -96,19 +78,18 @@ contract KlerosboardSuscription is Ownable {
         emit MaintainerChanged(oldMaintainer, maintainer);
     }
 
-    function changeMaintenanceFee (uint8 _newFee) public onlyOwner {
-        // TODO: Check fees definition
-        require(_newFee <= 10, '10% it is the max fee allowed');
-        maintenanceFeeDivisor = 100 / _newFee;
-        // express maintainance as a multiplier.
-        // Like 0 < _newFee < 10, it's safe to calculate 100 / _newFee
-        emit MaintenanceFeeChanged(maintenanceFeeDivisor);
+    function changeMaintenanceFee (uint _newFee) public onlyOwner {
+        require(_newFee <= 5000, '50% it is the max fee allowed');
+        maintenanceFeeMultiplier = _newFee;
+        // express maintainance as a multiplier in tens of thousands .
+        emit MaintenanceFeeChanged(maintenanceFeeMultiplier);
     }
 
     function changeUBIburner (address _ubiburner) public onlyOwner {
         require(_ubiburner != address(0), 'UBIBurner could not be null');
+        address oldUbiburner = ubiburner;
         ubiburner = _ubiburner;
-        emit UBUBurnerChanged(ubiburner);
+        emit UBIBurnerChanged(oldUbiburner, ubiburner);
     }
 
     function changeDonationPerMonth (uint256 _donationPerMonth) public onlyOwner {

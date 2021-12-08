@@ -16,7 +16,7 @@ async function main() {
 
   const KBSfactory = await hre.ethers.getContractFactory("KlerosboardSuscription");
   donationPerMonth = hre.ethers.utils.parseUnits('0.1', 'ether');
-  maintenanceFee = 5;
+  maintenanceFee = 5000;
   const kbsub = await KBSfactory.deploy(ubiburner.address, maintenanceFee, donationPerMonth);
 
   await kbsub.deployed();

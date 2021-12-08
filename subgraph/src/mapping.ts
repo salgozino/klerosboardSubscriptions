@@ -4,8 +4,7 @@ import {
   MaintainerChanged,
   MaintenanceFeeChanged,
   OwnershipTransferred,
-  UBIBurnDonation,
-  UBUBurnerChanged,
+  UBIBurnerChanged,
   donationPerMonthChanged
 } from "../generated/KlerosboardSuscription/KlerosboardSuscription"
 import { KBSubscription, Donor, Donation } from "../generated/schema"
@@ -19,16 +18,12 @@ export function handleDonation(event: DonationEvent): void {
   donation.amount = event.params.amount;
   donation.donor = donor.id;
   donation.timestamp = event.block.timestamp;
-  
-  let kbs = getOrCreateKBS();
-  donation.ethToMaintainance = event.params.amount.div(kbs.maintenanceFeeDivisor!);
-  donation.ethToUBIBurner = event.params.amount.minus(donation.ethToMaintainance!);
+  donation.ethToUBIBurner = event.params.ethToUbiBurner;
+  donation.ethToMaintainance = donation.amount.minus(donation.ethToUBIBurner);
   donation.save();
 
   log.debug("handleDonation: Updating KBS donations array.", [donation_id])
-  let donations = kbs.donations;
-  donations.push(donation.id);
-  kbs.donations = donations;
+  let kbs = getOrCreateKBS();
   kbs.totalDonated = kbs.totalDonated.plus(event.params.amount);
   kbs.totalETHToUBIBurner = kbs.totalETHToUBIBurner.plus(donation.ethToUBIBurner);
   kbs.save()
@@ -36,9 +31,9 @@ export function handleDonation(event: DonationEvent): void {
   log.debug("handleDonation: Updating Donor {} information.", [event.params.from.toString()])
 
   donor.lastDonated = event.params.amount;
+  donor.lastDonatedTimestamp = event.block.timestamp;
   donor.totalDonated = donor.totalDonated.plus(event.params.amount);
   donor.totalETHToUBIBurner = donor.totalETHToUBIBurner.plus(donation.ethToUBIBurner);
-  donor.lastDonatedTimestamp = event.block.timestamp;
   donor.save();
 
 }
@@ -51,10 +46,10 @@ export function handleMaintainerChanged(event: MaintainerChanged): void {
 }
 
 export function handleMaintenanceFeeChanged(event: MaintenanceFeeChanged): void {
-  let newMaintenance = BigInt.fromI32(event.params.maintenanceFeeDivisor)
+  let newMaintenance = event.params.maintenanceFeeMultiplier
   log.debug("handleMaintenanceFeeChanged: New maintainanceFee set to {}", [newMaintenance.toString()]);
   let kbs = getOrCreateKBS();
-  kbs.maintenanceFeeDivisor = newMaintenance;
+  kbs.maintenanceFeeMultiplier = newMaintenance;
   kbs.save();
 }
 
@@ -65,13 +60,9 @@ export function handleOwnershipTransferred(event: OwnershipTransferred): void {
   kbs.save();
 }
 
-export function handleUBIBurnDonation(event: UBIBurnDonation): void {
-  // handled in Donation Event
-}
-
-export function handleUBUBurnerChanged(event: UBUBurnerChanged): void {
+export function handleUBIBurnerChanged(event: UBIBurnerChanged): void {
   let kbs = getOrCreateKBS();
-  log.debug("handleUBUBurnerChanged: New UBIBurner set to {}", [event.params.ubiburner.toString()]);
+  log.debug("handleUBIBurnerChanged: New UBIBurner set to {}", [event.params.ubiburner.toString()]);
   kbs.UBIBurner = event.params.ubiburner;
   kbs.save();
 }
@@ -90,14 +81,13 @@ function getOrCreateKBS(): KBSubscription {
   if (kbs == null) {
     log.debug("getOrCreateKBS: Creating new KBS", [])
     kbs = new KBSubscription('0x0');
-    kbs.maintenanceFeeDivisor = BigInt.fromI32(0);
+    kbs.maintenanceFeeMultiplier = BigInt.fromI32(0);
     kbs.donationPerMonth = BigInt.fromI32(0);
     kbs.maintainer = new Address(0x0);
     kbs.UBIBurner = new Address(0x0);
     kbs.owner = new Address(0x0);
     kbs.totalDonated = BigInt.fromI32(0);
     kbs.totalETHToUBIBurner = BigInt.fromI32(0);
-    kbs.donations = [];
     kbs.save();
   }
   return kbs!

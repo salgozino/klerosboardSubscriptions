@@ -13,7 +13,7 @@ describe("KlerosBoardSuscription", function () {
     await this.ubiburner.deployed();
     
     const KBSfactory = await ethers.getContractFactory("KlerosboardSuscription");
-    this.maintainanceFee = 5;
+    this.maintainanceFee = 500;
     this.donationPerMonth = 10000000000;
     this.kbsub = await KBSfactory.deploy(this.ubiburner.address, this.maintainanceFee, this.donationPerMonth);
     await this.kbsub.deployed();
@@ -30,14 +30,34 @@ describe("KlerosBoardSuscription", function () {
   });
 
   it("Maintainance Fee changes", async function() {
-    expect(await this.kbsub.maintenanceFeeDivisor()).to.be.equal(100/this.maintainanceFee);
+    expect(await this.kbsub.maintenanceFeeMultiplier()).to.be.equal(this.maintainanceFee);
 
-    await expect(this.kbsub.changeMaintenanceFee(10))
+    newMultiplier = 10
+    await expect(this.kbsub.changeMaintenanceFee(newMultiplier))
     .to.emit(this.kbsub, 'MaintenanceFeeChanged')
-    .withArgs(10);
+    .withArgs(newMultiplier);
 
-    expect(await this.kbsub.maintenanceFeeDivisor()).to.be.equal(10);
+    expect(await this.kbsub.maintenanceFeeMultiplier()).to.be.equal(newMultiplier);
 
+  });
+
+
+  it("Maintainance Fee revert if > 50%", async function() {
+    newMultiplier = 5001
+    await expect(this.kbsub.changeMaintenanceFee(newMultiplier))
+    .to.revertedWith("50% it is the max fee allowed");
+
+  });
+
+  it("Maintainance Fee set to Zero", async function() {
+    expect(await this.kbsub.maintenanceFeeMultiplier()).to.be.equal(this.maintainanceFee);
+
+    newMultiplier = 0
+    await expect(this.kbsub.changeMaintenanceFee(newMultiplier))
+    .to.emit(this.kbsub, 'MaintenanceFeeChanged')
+    .withArgs(newMultiplier);
+
+    expect(await this.kbsub.maintenanceFeeMultiplier()).to.be.equal(newMultiplier);
   });
 
   it("Maintainer change revert if not Owner", async function() {
@@ -104,7 +124,13 @@ describe("KlerosBoardSuscription", function () {
 
   it("onlyOwner can change ubiburner", async function() {
     await expect(this.kbsub.connect(this.account1).changeUBIburner(this.deployer.address)).to.be.reverted;
+  });
 
+  it("change ubiburner emit event", async function() {
+    
+    await expect(this.kbsub.changeUBIburner(this.deployer.address))
+    .to.emit(this.kbsub, 'UBIBurnerChanged')
+    .withArgs(this.ubiburner.address, this.deployer.address);
   });
 
   it("ubiburner cant be null address", async function() {
@@ -120,9 +146,6 @@ describe("KlerosBoardSuscription", function () {
     
     expect(kb_balance).to.be.equal(ethers.utils.parseUnits('0.05', 'ether'));
     expect(ubiburn_balance).to.be.equal(ethers.utils.parseUnits('0.95', 'ether'));
-    expect(await this.kbsub.isDonor(this.account2.address)).to.be.true;
-    expect(await this.kbsub.isDonor(this.account1.address)).to.be.false;
-    expect(await this.kbsub.getTotalDonor(this.account2.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
 
   });
 
@@ -133,31 +156,14 @@ describe("KlerosBoardSuscription", function () {
     
     expect(kb_balance).to.be.equal(ethers.utils.parseUnits('0.05', 'ether'));
     expect(ubiburn_balance).to.be.equal(ethers.utils.parseUnits('0.95', 'ether'));
-    expect(await this.kbsub.isDonor(this.account1.address)).to.be.true;
-    expect(await this.kbsub.isDonor(this.account2.address)).to.be.false;
-    expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
-
   });
 
   it("1ETH Donation - KB events - account1", async function() {
 
     await expect(this.kbsub.connect(this.account1).donate({value: ethers.utils.parseUnits('1', 'ether')}))
     .to.emit(this.kbsub, 'Donation')
-    .withArgs(this.account1.address, ethers.utils.parseUnits('1', 'ether'));
+    .withArgs(this.account1.address, ethers.utils.parseUnits('1', 'ether'), ethers.utils.parseUnits('0.95', 'ether'));
 
-    expect(await this.kbsub.isDonor(this.account1.address)).to.be.true;
-    expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
-
-  });
-
-  it("1ETH Donation - UbiBurn event - account1", async function() {
-
-    await expect(this.kbsub.connect(this.account1).donate({value: ethers.utils.parseUnits('1', 'ether')}))
-    .to.emit(this.kbsub, 'UBIBurnDonation')
-    .withArgs(this.account1.address, ethers.utils.parseUnits('0.95', 'ether'));
-
-    expect(await this.kbsub.isDonor(this.account1.address)).to.be.true;
-    expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1', 'ether'));
   });
 
   it("Withdraw only by maintainer", async function(){
@@ -186,17 +192,6 @@ describe("KlerosBoardSuscription", function () {
     
     expect(kb_balance).to.be.equal(ethers.utils.parseUnits('0.175', 'ether'));
     expect(ubiburn_balance).to.be.equal(ethers.utils.parseUnits('3.325', 'ether'));
-    
-
-    expect(await this.kbsub.isDonor(this.account1.address)).to.be.true;
-    expect(await this.kbsub.isDonor(this.account2.address)).to.be.true;
-    expect(await this.kbsub.isDonor(this.deployer.address)).to.be.false;
-
-
-    expect(await this.kbsub.getTotalDonor(this.account2.address)).to.be.equal(ethers.utils.parseUnits('2', 'ether'));
-
-    expect(await this.kbsub.getTotalDonor(this.account1.address)).to.be.equal(ethers.utils.parseUnits('1.5', 'ether'));
-
 
   })
   

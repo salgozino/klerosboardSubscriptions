@@ -7,20 +7,16 @@ require("@nomiclabs/hardhat-ethers");
 const hre = require("hardhat");
 
 async function main() {
-
-  eoa = await ethers.getSigners();
-
-  const KBSfactory = await hre.ethers.getContractFactory("KlerosboardSuscription");
-  const kbsub = KBSfactory.attach("0xf18DF340D32BcbD188c643D5D6f4D5B09aA83535");
-  const ubiburner = await kbsub.ubiburner();
-  console.log("UBIBurner: ", ubiburner);
-  await kbsub.donate({value: hre.ethers.utils.parseUnits('0.1','ether')})
-
-  console.log("Balance of KB:", (await hre.ethers.provider.getBalance(kbsub.address)).toString())
-  
-  console.log("Balance of UBIBurner:", (await hre.ethers.provider.getBalance(ubiburner)).toString())
-
-
+  donationPerMonth = hre.ethers.utils.parseUnits('0.2', 'ether');
+  maintenanceFee = 1000;
+  await hre.run("verify:verify", {
+    address: "0x9313F75F4C49a57D1D0158232C526e24Bb40f281",
+    constructorArguments: [
+      "0x481B24Ed5feAcB37e282729b9815e27529Cf9ae2",
+      maintenanceFee,
+      donationPerMonth
+    ],
+  });
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -2,7 +2,11 @@
   {
     "inputs": [
       { "internalType": "address", "name": "_ubiburner", "type": "address" },
-      { "internalType": "uint8", "name": "_maintenanceFee", "type": "uint8" },
+      {
+        "internalType": "uint256",
+        "name": "_maintenanceFee",
+        "type": "uint256"
+      },
       {
         "internalType": "uint96",
         "name": "_donationPerMonth",
@@ -25,6 +29,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "ethToUbiBurner",
         "type": "uint256"
       }
     ],
@@ -55,9 +65,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint8",
-        "name": "maintenanceFeeDivisor",
-        "type": "uint8"
+        "internalType": "uint256",
+        "name": "maintenanceFeeMultiplier",
+        "type": "uint256"
       }
     ],
     "name": "MaintenanceFeeChanged",
@@ -86,24 +96,11 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
-        "name": "from",
+        "name": "oldUbiburner",
         "type": "address"
       },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "UBIBurnDonation",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
       {
         "indexed": false,
         "internalType": "address",
@@ -111,7 +108,7 @@
         "type": "address"
       }
     ],
-    "name": "UBUBurnerChanged",
+    "name": "UBIBurnerChanged",
     "type": "event"
   },
   {
@@ -156,7 +153,9 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint8", "name": "_newFee", "type": "uint8" }],
+    "inputs": [
+      { "internalType": "uint256", "name": "_newFee", "type": "uint256" }
+    ],
     "name": "changeMaintenanceFee",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -186,20 +185,6 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "getTotalDonor",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "isDonor",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "maintainer",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
@@ -208,8 +193,8 @@
   },
   {
     "inputs": [],
-    "name": "maintenanceFeeDivisor",
-    "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
+    "name": "maintenanceFeeMultiplier",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
