@@ -90,7 +90,7 @@ function getOrCreateKBS(): KBSubscription {
     kbs.totalETHToUBIBurner = BigInt.fromI32(0);
     kbs.save();
   }
-  return kbs!
+  return kbs
 }
 
 function getOrCreateDonor(address: Address): Donor {
@@ -103,5 +103,5 @@ function getOrCreateDonor(address: Address): Donor {
     donor.totalETHToUBIBurner = BigInt.fromI32(0);
     donor.save();
   }
-  return donor!;
+  return donor;
 }
